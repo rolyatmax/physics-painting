@@ -85,17 +85,17 @@ function drawLines() {
     let particles = createParticles(count);
     let gravity = [random(-0.01, 0.01), random(0.01)];
     let friction = 1; // 0.99;
-    let mouse = [random(canvas.width), random(canvas.height)];
+    let origin = [canvas.width / 2, canvas.height / 2];
 
-    document.addEventListener('click', ({clientX, clientY}) => mouse = [clientX, clientY]);
+    document.addEventListener('click', ({clientX, clientY}) => origin = [clientX, clientY]);
 
     function render(t) {
         let step = Math.min(1, easeIn(t / 5000, 0, 1));
         requestAnimationFrame(render);
         let positions = particles.map(p => {
             let {position} = p;
-            let distance = dist(position, mouse);
-            let attraction = mouse.map((coord, i) => (coord - position[i]) / (distance * distance) * 10);
+            let distance = dist(position, origin);
+            let attraction = origin.map((coord, i) => (coord - position[i]) / (distance * distance) * 10);
             let acceleration = attraction.map((coord, i) => coord + gravity[i]);
             return p.update(acceleration, friction);
         });
