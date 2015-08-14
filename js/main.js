@@ -1,6 +1,6 @@
-import {random, startAnimation} from 'utils';
+import {random, startAnimation, easeIn} from 'utils';
 
-let imgPath = `img/${Math.round(random(16))}.jpg`;
+let imgPath = `img/${Math.round(random(1, 16))}.jpg`;
 
 let image = document.createElement('img');
 image.src = imgPath;
@@ -87,9 +87,10 @@ function drawLines() {
     let friction = 1; // 0.99;
     let mouse = [random(canvas.width), random(canvas.height)];
 
-    document.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY]);
+    document.addEventListener('click', ({clientX, clientY}) => mouse = [clientX, clientY]);
 
-    function render() {
+    function render(t) {
+        let step = Math.min(1, easeIn(t / 5000, 0, 1));
         requestAnimationFrame(render);
         let positions = particles.map(p => {
             let {position} = p;
@@ -99,9 +100,10 @@ function drawLines() {
             return p.update(acceleration, friction);
         });
         positions.forEach(p => {
-            let radius = random(10, 20) * 0.1;
+            let ran = Math.max(100 * (1 - step), 1);
+            let radius = random(ran, ran * 2);
             let {r, g, b} = pixelPicker(p[0] | 0, p[1] | 0);
-            let a = random(0.55, 0.95);
+            let a = random(0.15, 0.25) * Math.pow(step, 11);
             drawCircle(ctx, p[0], p[1], radius, `rgba(${r}, ${g}, ${b}, ${a})`);
         });
     }
