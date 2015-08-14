@@ -1,16 +1,16 @@
 {
-  "name": "line-painting",
+  "name": "physics-painting",
   "version": "1.0.0",
   "description": "",
   "main": "js/main.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rolyatmax/line-painting.git"
+    "url": "git+https://github.com/rolyatmax/physics-painting.git"
   },
   "bugs": {
-    "url": "https://github.com/rolyatmax/line-painting/issues"
+    "url": "https://github.com/rolyatmax/physics-painting/issues"
   },
-  "homepage": "https://github.com/rolyatmax/line-painting#readme",
+  "homepage": "https://github.com/rolyatmax/physics-painting#readme",
   "scripts": {
     "watch": "mkdir -p build && node_modules/.bin/watchify js/main.js -o build/build.js -v",
     "build": "mkdir -p build && node_modules/.bin/browserify js/main.js -o build/build.js",

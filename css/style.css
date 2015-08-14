@@ -29,7 +29,7 @@ h1 {
     bottom: 40px;
     left: 40px;
     padding: 25px 85px;
-    background: white; /*#fbfbfb url(../img/symphony.png);*/
+    background: white;
     letter-spacing: -1px;
     opacity: 0;
     transition: opacity 300ms linear;

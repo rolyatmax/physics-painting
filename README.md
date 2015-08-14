@@ -1,5 +1,5 @@
-Line Painting
-=====
+Physics Painting
+=============
 
 # Run it yourself:
 
