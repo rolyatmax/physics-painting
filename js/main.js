@@ -65,7 +65,7 @@ function createParticles(count) {
     while (count--) {
         particles.push(new Particle({
             position: [random(canvas.width), random(canvas.height)],
-            velocity: [random(-4, 4), random(-4, 4)]
+            velocity: [0, 0] // [random(-4, 4), random(-4, 4)]
         }));
     }
     return particles;
@@ -83,9 +83,9 @@ function drawLines() {
 
     let count = 500;
     let particles = createParticles(count);
-    let gravity = [random(-0.005, 0.005), random(0.005)];
+    let gravity = [random(-0.01, 0.01), random(0.01)];
     let friction = 1; // 0.99;
-    let mouse = [canvas.width / 2, canvas.height / 2];
+    let mouse = [random(canvas.width), random(canvas.height)];
 
     document.addEventListener('mousemove', ({clientX, clientY}) => mouse = [clientX, clientY]);
 
@@ -99,9 +99,9 @@ function drawLines() {
             return p.update(acceleration, friction);
         });
         positions.forEach(p => {
-            let radius = random(10, 20) * 0.4;
+            let radius = random(10, 20) * 0.1;
             let {r, g, b} = pixelPicker(p[0] | 0, p[1] | 0);
-            let a = random(0.05, 0.15);
+            let a = random(0.55, 0.95);
             drawCircle(ctx, p[0], p[1], radius, `rgba(${r}, ${g}, ${b}, ${a})`);
         });
     }
@@ -147,7 +147,6 @@ function fadeInBg(div) {
     c.style.zIndex = div.style.zIndex || 0;
     div.style.zIndex = div.style.zIndex ? div.style.zIndex + 1 : 1;
     container.appendChild(c);
-
 
     let hue = random(360) | 0;
 
