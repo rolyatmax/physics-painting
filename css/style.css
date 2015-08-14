@@ -1,0 +1,53 @@
+@font-face {
+    font-family: Hero;
+    src: url('../font/hero_light.otf');
+}
+@font-face {
+    font-family: Hero;
+    font-weight: bold;
+    src: url('../font/hero.otf');
+}
+
+body {
+    font-family: Hero, sans-serif;
+    color: #6a6a6a;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+h1 {
+    font-size: 40px;
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    padding: 25px 85px;
+    background: white; /*#fbfbfb url(../img/symphony.png);*/
+    letter-spacing: -1px;
+    opacity: 0;
+    transition: opacity 300ms linear;
+    overflow: hidden;
+}
+h1 span {
+    position: relative;
+    left: -4px;
+    transform: rotate3d(7, 1, 1, 86deg) scale(2, 2);
+    opacity: 0;
+}
+
+h1.show {
+    opacity: 1;
+}
+
+h1.show span {
+    left: 0;
+    opacity: 1;
+    transform: rotate3d(1, 1, 1, 0) scale(1, 1);
+}
