@@ -1,15 +1,5 @@
-@font-face {
-    font-family: Hero;
-    src: url('../font/hero_light.otf');
-}
-@font-face {
-    font-family: Hero;
-    font-weight: bold;
-    src: url('../font/hero.otf');
-}
-
 body {
-    font-family: Hero, sans-serif;
+    font-family: 'Ubuntu', sans-serif;
     color: #6a6a6a;
     -webkit-font-smoothing: antialiased;
 }
@@ -23,17 +13,24 @@ body {
     left: 0;
 }
 
-h1 {
-    font-size: 40px;
+.info {
     position: absolute;
     bottom: 40px;
     left: 40px;
-    padding: 25px 85px;
+    width: 350px;
+    padding: 20px 30px;
     background: white;
-    letter-spacing: -1px;
     opacity: 0;
     transition: opacity 300ms linear;
     overflow: hidden;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    padding-bottom: 11px;
+    border-bottom: 1px dashed #ccc;
 }
 h1 span {
     position: relative;
@@ -42,12 +39,50 @@ h1 span {
     opacity: 0;
 }
 
-h1.show {
+.info.show {
     opacity: 1;
 }
 
-h1.show span {
+.info.show h1 span {
     left: 0;
     opacity: 1;
     transform: rotate3d(1, 1, 1, 0) scale(1, 1);
+}
+
+.info.show h2, .info.show h3 {
+    opacity: 1;
+    top: 0;
+}
+
+h2, h3 {
+    text-transform: uppercase;
+    color: #aaa;
+    opacity: 0;
+    position: relative;
+    top: 5px;
+    transition: all 200ms ease-in;
+}
+
+h2 {
+    margin: 11px 0;
+    font-size: 14px;
+    transition-delay: 300ms;
+}
+
+h3 {
+    font-size: 11px;
+    font-weight: 800;
+    transition-delay: 450ms;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #aaa;
+    transition: all 200ms ease-in;
+}
+
+a:hover {
+    color: #333;
 }

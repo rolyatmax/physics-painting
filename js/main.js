@@ -1,6 +1,6 @@
 import {random, startAnimation, easeIn} from 'utils';
 
-let imgPath = `img/${Math.round(random(1, 16))}.jpg`;
+let imgPath = `img/${Math.round(random(1, 14))}.jpg`;
 
 let image = document.createElement('img');
 image.src = imgPath;
@@ -16,25 +16,35 @@ canvas.width = width;
 
 container.appendChild(canvas);
 
-function getImageCanvas(img, curCanvas, newCanvas) {
-    function resize(prop1, prop2) {
-        if (curCanvas[prop1] && !curCanvas[prop2]) {
-            curCanvas[prop2] = img[prop2] / img[prop1] * curCanvas[prop1];
-        }
+function scaleToFill(imgWidth, imgHeight, containerWidth, containerHeight) {
+    if (arguments.length === 2) {
+        containerHeight = imgHeight.height;
+        containerWidth = imgHeight.width;
+        imgHeight = imgWidth.height;
+        imgWidth = imgWidth.width;
     }
+    let w = Math.max(containerWidth, imgWidth * (containerHeight / imgHeight));
+    let h = Math.max(containerHeight, imgHeight * (containerWidth / imgWidth));
+    return {
+        x: -((w - containerWidth) / 2),
+        y: -((h - containerHeight) / 2),
+        width: w,
+        height: h
+    };
+}
 
-    resize('width', 'height');
-    resize('height', 'width');
+function getImageCanvas(img, dim, newCanvas) {
     newCanvas = newCanvas || document.createElement('canvas');
-    newCanvas.width = curCanvas.width;
-    newCanvas.height = curCanvas.height;
+    newCanvas.width = dim.width;
+    newCanvas.height = dim.height;
     let ctx = newCanvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, img.naturalWidth || img.width, img.naturalHeight || img.height, 0, 0, curCanvas.width, curCanvas.height);
+    ctx.drawImage(img, -dim.x, -dim.y, img.naturalWidth || img.width, img.naturalHeight || img.height, 0, 0, dim.width, dim.height);
     return newCanvas;
 }
 
 function makePixelPicker(img, canvas) {
-    let imgCanvas = getImageCanvas(img, canvas);
+    let dimensions = scaleToFill(img.width, img.height, width, height);
+    let imgCanvas = getImageCanvas(img, dimensions);
     let imageData = imgCanvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
     return function(x, y) {
         let color = {};
@@ -83,7 +93,7 @@ function drawLines() {
 
     let count = 500;
     let particles = createParticles(count);
-    let gravity = [random(-0.01, 0.01), random(0.01)];
+    let gravity = [random(-0.005, 0.005), random(0.005)];
     let friction = 1; // 0.99;
     let origin = [canvas.width / 2, canvas.height / 2];
 
@@ -119,7 +129,7 @@ function drawCircle(ctx, x, y, radius, color) {
 }
 
 
-let title = document.querySelector('.container h1');
+let title = document.querySelector('.info h1');
 let titleText = title.textContent.trim();
 title.textContent = '';
 
@@ -143,8 +153,9 @@ function fadeInBg(div) {
     c.width = width;
     c.style.height = `${height}px`;
     c.style.width = `${width}px`;
-    c.style.top = `${top}px`;
-    c.style.left = `${left}px`;
+    let divStyle = window.getComputedStyle(div);
+    c.style.bottom = divStyle.bottom;
+    c.style.left = divStyle.left;
     c.style.position = 'absolute';
     c.style.zIndex = div.style.zIndex || 0;
     div.style.zIndex = div.style.zIndex ? div.style.zIndex + 1 : 1;
@@ -157,23 +168,24 @@ function fadeInBg(div) {
         let radius = step * width | 0;
         let lightness = step * 50 + 30 | 0;
         ctx.arc(width / 2, height / 2, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = `hsl(${hue}, ${25}%, ${lightness}%)`;
+        ctx.fillStyle = `hsl(${hue}, ${5}%, ${lightness}%)`;
         ctx.fill();
     }, 350);
 }
 
-function fadeInText(letters) {
+function fadeInText(letters, info) {
     letters.forEach((span, i) => {
         let delay = (letters.length - i) * 15;
         span.style.transition = `all 400ms cubic-bezier(.15,.62,.38,.94) ${delay}ms`;
     });
-    title.classList.add('show');
+    info.classList.add('show');
 }
 
 function main() {
+    let info = document.querySelector('.info');
     drawLines();
     setTimeout(() => {
-        fadeInBg(title)
-            .then(fadeInText.bind(null, letters));
+        fadeInBg(info)
+            .then(fadeInText.bind(null, letters, info));
     }, 5000);
 }
