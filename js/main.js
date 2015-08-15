@@ -140,8 +140,6 @@ while (titleText.length) {
     span.textContent = titleText[0];
     titleText = titleText.slice(1);
     title.appendChild(span);
-    // let idx = Math.round(random(letters.length));
-    // letters.splice(idx, 0, span);
     letters.push(span);
 }
 
