@@ -1,7 +1,11 @@
 export default function makePixelPicker(img, canvas) {
-    let dimensions = scaleToFill(img.width, img.height, canvas.width, canvas.height);
+    let dimensions = scaleToFill(
+        img.width, img.height, canvas.width, canvas.height
+    );
     let imgCanvas = getImageCanvas(img, dimensions);
-    let imageData = imgCanvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+    let imageData = imgCanvas.getContext('2d').getImageData(
+        0, 0, canvas.width, canvas.height
+    );
     return function(x, y) {
         let color = {};
         let i = 4 * (x + y * imageData.width);
@@ -35,6 +39,11 @@ function getImageCanvas(img, dim, newCanvas) {
     newCanvas.width = dim.width;
     newCanvas.height = dim.height;
     let ctx = newCanvas.getContext('2d');
-    ctx.drawImage(img, -dim.x, -dim.y, img.naturalWidth || img.width, img.naturalHeight || img.height, 0, 0, dim.width, dim.height);
+    let imgWidth = img.naturalWidth || img.width;
+    let imgHeight = img.naturalHeight || img.height;
+    ctx.drawImage(
+        img, -dim.x, -dim.y, imgWidth,
+        imgHeight, 0, 0, dim.width, dim.height
+    );
     return newCanvas;
 }

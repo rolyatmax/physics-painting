@@ -30,14 +30,14 @@ function drawLines(image, canvas) {
     document.addEventListener('click', ({clientX, clientY}) => origin = [clientX, clientY]);
 
     function createParticles(count) {
-        let particles = [];
+        let ps = [];
         while (count--) {
-            particles.push(new Particle({
+            ps.push(new Particle({
                 position: [random(canvas.width), random(canvas.height)],
                 velocity: [0, 0] // [random(-4, 4), random(-4, 4)]
             }));
         }
-        return particles;
+        return ps;
     }
 
     function dist([startX, startY], [endX, endY]) {
@@ -60,7 +60,8 @@ function drawLines(image, canvas) {
         let positions = particles.map(p => {
             let {position} = p;
             let distance = dist(position, origin);
-            let attraction = origin.map((coord, i) => (coord - position[i]) / (distance * distance) * 10);
+            let attraction = origin.map((coord, i) =>
+                (coord - position[i]) / (distance * distance) * 10);
             let acceleration = attraction.map((coord, i) => coord + gravity[i]);
             return p.update(acceleration, friction);
         });
