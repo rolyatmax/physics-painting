@@ -27027,6 +27027,7 @@ function loadImage(path, cb) {
 }
 
 function redraw() {
+    setupPRNG(config.seed);
     var imgPath = 'img/' + config.image + '.jpg';
     loadImage(imgPath, function (image) {
         running = true;
@@ -27073,10 +27074,10 @@ function randomConfig() {
         friction: 0.99,
         area: random(maxSize / 10, maxSize / 1.5),
         lifespan: random(5, 60),
-        size: random(1, 20),
+        size: random(1, 15),
         noiseSize: random(10, 9999),
-        speed: random(1, 100),
-        fade: 0.1
+        speed: random(1, 50),
+        fade: 0.0
     };
 }
 
@@ -27102,10 +27103,10 @@ gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(updateHashAndRedraw)
 gui.add(config, 'particles', 1, 999).step(1).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'size', 1, 200).step(1).onFinishChange(updateHash);
+gui.add(config, 'size', 1, 20).step(1).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'noiseSize', 10, 99999).step(10).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'speed', 1, 100).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHash);
+gui.add(config, 'speed', 1, 50).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'image', images).onFinishChange(updateHashAndRedraw);
 gui.add({ redraw: redraw }, 'redraw');
 gui.add({ reseed: reseed }, 'reseed');
