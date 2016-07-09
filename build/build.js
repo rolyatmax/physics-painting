@@ -26789,6 +26789,8 @@ var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = 
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
@@ -26805,9 +26807,9 @@ var _pixel_picker = require('./pixel_picker');
 
 var _pixel_picker2 = _interopRequireDefault(_pixel_picker);
 
-var _encodeObject = require('encode-object');
+var _encodeObject2 = require('encode-object');
 
-var _encodeObject2 = _interopRequireDefault(_encodeObject);
+var _encodeObject3 = _interopRequireDefault(_encodeObject2);
 
 var _simplexNoise = require('simplex-noise');
 
@@ -26837,11 +26839,11 @@ var SPACEBAR = 32;
 var images = ['flatiron', 'blossoms', 'coffee', 'mountains', 'empire', 'palms', 'fruit', 'mosque', 'snowday', 'skyline', 'whitehouse'];
 var maxSize = Math.max(window.innerHeight, window.innerWidth) / 2 | 0;
 
-var _createEncoder = (0, _encodeObject2['default'])({
+var _createEncoder = (0, _encodeObject3['default'])({
     seed: ['int', 5],
     // update encode-object to accept list of strings in config
     // this is drastically increasing the length of the hash
-    image: ['string', 10],
+    image: ['int', 2],
     particles: ['int', 3],
     friction: ['float', 3],
     area: ['int', 4],
@@ -26854,6 +26856,21 @@ var _createEncoder = (0, _encodeObject2['default'])({
 
 var encodeObject = _createEncoder.encodeObject;
 var decodeObject = _createEncoder.decodeObject;
+
+var _encodeObject = encodeObject;
+var _decodeObject = decodeObject;
+
+encodeObject = function (obj) {
+    obj = _extends({}, obj);
+    obj.image = images.indexOf(obj.image);
+    return _encodeObject(obj);
+};
+
+decodeObject = function (hash) {
+    var obj = _decodeObject(hash);
+    obj.image = images[obj.image];
+    return obj;
+};
 
 var config = randomConfig();
 
@@ -27034,6 +27051,11 @@ function setupPRNG(seed) {
 
 function updateHash() {
     location.hash = encodeObject(config);
+    if (gui) {
+        for (var key in gui.__controllers) {
+            gui.__controllers[key].updateDisplay();
+        }
+    }
 }
 
 function updateHashAndRedraw() {
@@ -27052,7 +27074,7 @@ function randomConfig() {
         area: random(maxSize / 10, maxSize / 1.5),
         lifespan: random(5, 60),
         size: random(1, 20),
-        noiseSize: random(10, 99999),
+        noiseSize: random(10, 9999),
         speed: random(1, 100),
         fade: 0.1
     };
@@ -27076,15 +27098,15 @@ setTimeout(function () {
 redraw();
 
 var gui = window.gui = new _datGui.GUI();
-gui.add(config, 'area', 10, maxSize).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'particles', 1, 999).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'friction', 0.5, 0.99).listen().step(0.01).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'lifespan', 1, 120).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'size', 1, 200).listen().step(1).onFinishChange(updateHash);
-gui.add(config, 'noiseSize', 10, 99999).listen().step(10).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'speed', 1, 100).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'fade', 0, 0.3).listen().step(0.01).onFinishChange(updateHash);
-gui.add(config, 'image', images).listen().onFinishChange(updateHashAndRedraw);
+gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'particles', 1, 999).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'size', 1, 200).step(1).onFinishChange(updateHash);
+gui.add(config, 'noiseSize', 10, 99999).step(10).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'speed', 1, 100).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHash);
+gui.add(config, 'image', images).onFinishChange(updateHashAndRedraw);
 gui.add({ redraw: redraw }, 'redraw');
 gui.add({ reseed: reseed }, 'reseed');
 gui.add({ randomize: randomize }, 'randomize');

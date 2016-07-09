@@ -28,11 +28,11 @@ const images = ['flatiron', 'blossoms', 'coffee', 'mountains', 'empire', 'palms'
     'fruit', 'mosque', 'snowday', 'skyline', 'whitehouse'];
 const maxSize = Math.max(window.innerHeight, window.innerWidth) / 2 | 0;
 
-const {encodeObject, decodeObject} = createEncoder({
+let {encodeObject, decodeObject} = createEncoder({
     seed: ['int', 5],
     // update encode-object to accept list of strings in config
     // this is drastically increasing the length of the hash
-    image: ['string', 10],
+    image: ['int', 2],
     particles: ['int', 3],
     friction: ['float', 3],
     area: ['int', 4],
@@ -42,6 +42,22 @@ const {encodeObject, decodeObject} = createEncoder({
     speed: ['int', 2],
     fade: ['float', 2]
 });
+
+let _encodeObject = encodeObject;
+let _decodeObject = decodeObject;
+
+encodeObject = function(obj) {
+    obj = {...obj};
+    obj.image = images.indexOf(obj.image);
+    return _encodeObject(obj);
+};
+
+decodeObject = function(hash) {
+    let obj = _decodeObject(hash);
+    obj.image = images[obj.image];
+    return obj;
+};
+
 
 const config = randomConfig();
 
@@ -192,6 +208,11 @@ function setupPRNG(seed) {
 
 function updateHash() {
     location.hash = encodeObject(config);
+    if (gui) {
+        for (let key in gui.__controllers) {
+            gui.__controllers[key].updateDisplay();
+        }
+    }
 }
 
 function updateHashAndRedraw() {
@@ -210,7 +231,7 @@ function randomConfig() {
         area: random(maxSize / 10, maxSize / 1.5),
         lifespan: random(5, 60),
         size: random(1, 20),
-        noiseSize: random(10, 99999),
+        noiseSize: random(10, 9999),
         speed: random(1, 100),
         fade: 0.1
     };
@@ -232,15 +253,15 @@ setTimeout(() => info.show(), 5000);
 redraw();
 
 const gui = window.gui = new GUI();
-gui.add(config, 'area', 10, maxSize).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'particles', 1, 999).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'friction', 0.5, 0.99).listen().step(0.01).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'lifespan', 1, 120).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'size', 1, 200).listen().step(1).onFinishChange(updateHash);
-gui.add(config, 'noiseSize', 10, 99999).listen().step(10).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'speed', 1, 100).listen().step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'fade', 0, 0.3).listen().step(0.01).onFinishChange(updateHash);
-gui.add(config, 'image', images).listen().onFinishChange(updateHashAndRedraw);
+gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'particles', 1, 999).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'size', 1, 200).step(1).onFinishChange(updateHash);
+gui.add(config, 'noiseSize', 10, 99999).step(10).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'speed', 1, 100).step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHash);
+gui.add(config, 'image', images).onFinishChange(updateHashAndRedraw);
 gui.add({ redraw }, 'redraw');
 gui.add({ reseed }, 'reseed');
 gui.add({ randomize }, 'randomize');
