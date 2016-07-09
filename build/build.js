@@ -27104,7 +27104,7 @@ gui.add(config, 'particles', 1, 999).step(1).onFinishChange(updateHashAndRedraw)
 gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'size', 1, 20).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'noiseSize', 10, 99999).step(10).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'noiseSize', 10, 99990).step(10).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'speed', 1, 50).step(1).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHashAndRedraw);
 gui.add(config, 'image', images).onFinishChange(updateHashAndRedraw);
