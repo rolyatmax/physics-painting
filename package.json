@@ -1,6 +1,6 @@
 {
   "name": "physics-painting",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "",
   "main": "js/main.js",
   "repository": {
@@ -34,6 +34,10 @@
     ]
   },
   "dependencies": {
+    "alea": "0.0.9",
+    "dat-gui": "^0.5.0",
+    "encode-object": "^0.1.1",
+    "simplex-noise": "^2.2.0",
     "utils": "git+ssh://git@github.com:rolyatmax/utils.git"
   }
 }
