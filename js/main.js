@@ -1,7 +1,8 @@
-import {easeIn} from 'utils';
+// import {easeIn} from 'utils';
 import Alea from 'alea';
 import InfoBox from './info_box';
 import makePixelPicker from './pixel_picker';
+import createEncoder from 'encode-object';
 import SimplexNoise from 'simplex-noise';
 import {GUI} from 'dat-gui';
 
@@ -16,27 +17,40 @@ function createRandom(randNumGenerator) {
     };
 }
 
+let generateSeed = () => (Math.random() * 99999) | 0;
+
 let prng;
 let random;
 let simplex;
-
-seed();
 
 const SPACEBAR = 32;
 const images = ['flatiron', 'blossoms', 'coffee', 'mountains', 'empire', 'palms',
     'fruit', 'mosque', 'snowday', 'skyline', 'whitehouse'];
 const maxSize = Math.max(window.innerHeight, window.innerWidth) / 2 | 0;
-const config = {
-    image: images[random(images.length)],
-    particles: random(100, 600),
-    friction: 0.99,
-    area: random(maxSize / 10, maxSize / 1.5),
-    lifespan: random(5, 60),
-    size: random(1, 20),
-    noiseSize: 1000,
-    speed: 40,
-    fade: 0.1
-};
+
+const {encodeObject, decodeObject} = createEncoder({
+    seed: ['int', 5],
+    // update encode-object to accept list of strings in config
+    // this is drastically increasing the length of the hash
+    image: ['string', 10],
+    particles: ['int', 3],
+    friction: ['float', 3],
+    area: ['int', 4],
+    lifespan: ['int', 3],
+    size: ['int', 3],
+    noiseSize: ['int', 5],
+    speed: ['int', 2],
+    fade: ['float', 2]
+});
+
+const config = randomConfig();
+
+let hash = location.hash.slice(1);
+if (hash) {
+    updateConfig(decodeObject(hash));
+    setupPRNG(config.seed);
+}
+updateHashAndRedraw();
 
 let running = true;
 let animationToken;
@@ -69,7 +83,7 @@ function drawLines(image, ctx) {
     let pixelPicker = makePixelPicker(image, ctx.canvas);
     let particles = createParticles(config.particles);
     // let gravity = [random(-0.005, 0.005), random(0.005)];
-    let origin = [ctx.canvas.width / 2, ctx.canvas.height / 2];
+    // let origin = [ctx.canvas.width / 2, ctx.canvas.height / 2];
 
     // document.addEventListener('click', (e) => origin = [e.clientX, e.clientY]);
 
@@ -99,11 +113,11 @@ function drawLines(image, ctx) {
         return ps;
     }
 
-    function dist([startX, startY], [endX, endY]) {
-        let diffX = startX - endX;
-        let diffY = startY - endY;
-        return Math.sqrt(diffX * diffX + diffY * diffY);
-    }
+    // function dist([startX, startY], [endX, endY]) {
+    //     let diffX = startX - endX;
+    //     let diffY = startY - endY;
+    //     return Math.sqrt(diffX * diffX + diffY * diffY);
+    // }
 
     function drawCircle(x, y, radius, color) {
         ctx.beginPath();
@@ -115,21 +129,26 @@ function drawLines(image, ctx) {
 
     function render() {
         z += 1;
-        let step = Math.min(1, easeIn(z, 0, 1));
+        // let step = Math.min(1, easeIn(z, 0, 1));
         if (running) animationToken = requestAnimationFrame(render);
         let positions = particles.map(p => {
             let {position} = p;
             // let distance = dist(position, origin);
             // let attraction = origin.map((coord, i) =>
             //     (coord - position[i]) / (distance * distance));
-            let noise = simplex.noise3D(position[0] / config.noiseSize, position[1] / config.noiseSize, z / config.noiseSize);
+            let noise = simplex.noise3D(
+                position[0] / config.noiseSize,
+                position[1] / config.noiseSize,
+                z / config.noiseSize
+            );
             let angle = noise * 360;
             let x = Math.sin(angle);
             let y = Math.cos(angle);
-            let acceleration = [x / config.speed, y / config.speed]; //.map((c, i) => c + attraction[i]);
+            // add attractor?: .map((c, i) => c + attraction[i]);
+            let acceleration = [x / config.speed, y / config.speed];
             return p.update(acceleration, config.friction);
         });
-        let a = Math.max(0.01, (1 - Math.pow(z / (config.lifespan * 16), 2)) / config.size );
+        let a = Math.max(0.01, (1 - Math.pow(z / (config.lifespan * 16), 2)) / config.size);
         positions.forEach((p, i) => {
             let noise = simplex.noise2D(i, z / 5000);
             let radius = (noise + 1) * config.size / 2;
@@ -159,25 +178,53 @@ function redraw() {
     });
 }
 
-function seed() {
-    let s = location.hash.slice(1) ?
-        parseInt(location.hash.slice(1), 10) :
-        (Math.random() * 99999) | 0;
-    location.hash = `#${s}`;
-    prng = new Alea(s);
+function reseed() {
+    config.seed = generateSeed();
+    setupPRNG(config.seed);
+    updateHashAndRedraw();
+}
+
+function setupPRNG(seed) {
+    prng = new Alea(seed);
     random = createRandom(prng);
     simplex = window.simplex = new SimplexNoise(prng);
 }
 
-function reseed() {
-    location.hash = '';
-    seed();
+function updateHash() {
+    location.hash = encodeObject(config);
+}
+
+function updateHashAndRedraw() {
+    updateHash();
     redraw();
 }
 
-function onConfigChange() {
-    location.hash = '';
-    redraw();
+function randomConfig() {
+    let prngSeed = generateSeed();
+    setupPRNG(prngSeed);
+    return {
+        seed: prngSeed,
+        image: images[random(images.length)],
+        particles: random(100, 600),
+        friction: 0.99,
+        area: random(maxSize / 10, maxSize / 1.5),
+        lifespan: random(5, 60),
+        size: random(1, 20),
+        noiseSize: random(10, 99999),
+        speed: random(1, 100),
+        fade: 0.1
+    };
+}
+
+function updateConfig(newConfig) {
+    Object.keys(config).forEach((key) => {
+        config[key] = newConfig[key];
+    });
+}
+
+function randomize() {
+    updateConfig(randomConfig());
+    updateHashAndRedraw();
 }
 
 let info = new InfoBox(document.querySelector('.info'));
@@ -185,14 +232,15 @@ setTimeout(() => info.show(), 5000);
 redraw();
 
 const gui = window.gui = new GUI();
-gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(onConfigChange);
-gui.add(config, 'particles', 1, 1000).step(1).onFinishChange(onConfigChange);
-gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(onConfigChange);
-gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(onConfigChange);
-gui.add(config, 'size', 1, 200).step(1);
-gui.add(config, 'noiseSize', 10, 10000).step(10).onFinishChange(onConfigChange);
-gui.add(config, 'speed', 1, 100).step(1).onFinishChange(onConfigChange);
-gui.add(config, 'fade', 0, 0.3).step(0.01);
-gui.add(config, 'image', images).onFinishChange(onConfigChange);
+gui.add(config, 'area', 10, maxSize).listen().step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'particles', 1, 999).listen().step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'friction', 0.5, 0.99).listen().step(0.01).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'lifespan', 1, 120).listen().step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'size', 1, 200).listen().step(1).onFinishChange(updateHash);
+gui.add(config, 'noiseSize', 10, 99999).listen().step(10).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'speed', 1, 100).listen().step(1).onFinishChange(updateHashAndRedraw);
+gui.add(config, 'fade', 0, 0.3).listen().step(0.01).onFinishChange(updateHash);
+gui.add(config, 'image', images).listen().onFinishChange(updateHashAndRedraw);
 gui.add({ redraw }, 'redraw');
 gui.add({ reseed }, 'reseed');
+gui.add({ randomize }, 'randomize');
