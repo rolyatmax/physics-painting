@@ -2,6 +2,11 @@ Physics Painting
 =============
 
 
+![physics-painting](/img/0c80f200em051W1I9fIkq1020p.png?raw=true "physics-painting")
+
+[0c80f200em051W1I9fIkq1020p](https://tbaldw.in/physics-painting#0c80f200em051W1I9fIkq1020p)
+
+------
 
 ![physics-painting](/img/0c803100fY070N2oe5t4xI0e0z.png?raw=true "physics-painting")
 
@@ -37,11 +42,6 @@ Physics Painting
 
 [0c80au0084011Q3nQfI9G80401](https://tbaldw.in/physics-painting#0c80au0084011Q3nQfI9G80401)
 
-------
-
-![physics-painting](/img/0c805u00fY03091o35u2kZ0d0i.png?raw=true "physics-painting")
-
-[0c805u00fY03091o35u2kZ0d0i](https://tbaldw.in/physics-painting#0c805u00fY03091o35u2kZ0d0i)
 
 ------
 
