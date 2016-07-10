@@ -1,49 +1,32 @@
+import fit from 'objectfit/cover';
+
 export default function makePixelPicker(img, canvas) {
-    let dimensions = scaleToFill(
-        img.width, img.height, canvas.width, canvas.height
-    );
-    let imgCanvas = getImageCanvas(img, dimensions);
+    let imgCanvas = getImageCanvas(img, canvas);
     let imageData = imgCanvas.getContext('2d').getImageData(
         0, 0, canvas.width, canvas.height
     );
-    return function(x, y) {
-        let color = {};
+    return (x, y) => {
         let i = 4 * (x + y * imageData.width);
-        color.r = imageData.data[i];
-        color.g = imageData.data[i + 1];
-        color.b = imageData.data[i + 2];
-        color.a = imageData.data[i + 3];
-        return color;
+        return {
+            r: imageData.data[i],
+            g: imageData.data[i + 1],
+            b: imageData.data[i + 2],
+            a: imageData.data[i + 3]
+        };
     };
 }
 
-function scaleToFill(imgWidth, imgHeight, containerWidth, containerHeight) {
-    if (arguments.length === 2) {
-        containerHeight = imgHeight.height;
-        containerWidth = imgHeight.width;
-        imgHeight = imgWidth.height;
-        imgWidth = imgWidth.width;
-    }
-    let w = Math.max(containerWidth, imgWidth * (containerHeight / imgHeight));
-    let h = Math.max(containerHeight, imgHeight * (containerWidth / imgWidth));
-    return {
-        x: -((w - containerWidth) / 2),
-        y: -((h - containerHeight) / 2),
-        width: w,
-        height: h
-    };
-}
-
-function getImageCanvas(img, dim, newCanvas) {
-    newCanvas = newCanvas || document.createElement('canvas');
-    newCanvas.width = dim.width;
-    newCanvas.height = dim.height;
+function getImageCanvas(img, container) {
+    let newCanvas = document.createElement('canvas');
+    newCanvas.width = container.width;
+    newCanvas.height = container.height;
     let ctx = newCanvas.getContext('2d');
     let imgWidth = img.naturalWidth || img.width;
     let imgHeight = img.naturalHeight || img.height;
-    ctx.drawImage(
-        img, -dim.x, -dim.y, imgWidth,
-        imgHeight, 0, 0, dim.width, dim.height
+    let bounds = fit(
+        [0, 0, container.width, container.height],
+        [0, 0, imgWidth, imgHeight]
     );
+    ctx.drawImage.apply(ctx, [img].concat(bounds));
     return newCanvas;
 }

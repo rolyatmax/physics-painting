@@ -2,6 +2,7 @@
 import Alea from 'alea';
 import InfoBox from './info_box';
 import makePixelPicker from './pixel_picker';
+import loadImg from 'load-img';
 import createEncoder from 'encode-object';
 import SimplexNoise from 'simplex-noise';
 import {GUI} from 'dat-gui';
@@ -22,6 +23,7 @@ let generateSeed = () => (Math.random() * 99999) | 0;
 let prng;
 let random;
 let simplex;
+let imageCache = {};
 
 const SPACEBAR = 32;
 const images = ['flatiron', 'blossoms', 'coffee', 'mountains', 'empire', 'palms',
@@ -166,6 +168,9 @@ function drawLines(image, ctx) {
         });
         let a = Math.max(0.01, (1 - Math.pow(z / (config.lifespan * 16), 2)) / config.size);
         positions.forEach((p, i) => {
+            if (p[0] < 0 || p[1] < 0 || p[0] > ctx.canvas.width || p[1] > ctx.canvas.height) {
+                return;
+            }
             let noise = simplex.noise2D(i, z / 5000);
             let radius = (noise + 1) * config.size / 2;
             let {r, g, b} = pixelPicker(p[0] | 0, p[1] | 0);
@@ -177,21 +182,27 @@ function drawLines(image, ctx) {
     animationToken = requestAnimationFrame(render);
 }
 
-function loadImage(path, cb) {
-    let image = document.createElement('img');
-    image.src = path;
-    image.onload = () => cb(image);
-}
-
 function redraw() {
     setupPRNG(config.seed);
     let imgPath = `img/${config.image}.jpg`;
-    loadImage(imgPath, (image) => {
+
+    function onLoadImg(image) {
         running = true;
         cancelAnimationFrame(animationToken);
         const ctx = window.ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawLines(image, ctx);
+    }
+
+    if (imageCache[imgPath]) {
+        onLoadImg(imageCache[imgPath]);
+        return;
+    }
+
+    loadImg(imgPath, {crossOrigin: true}, (err, image) => {
+        if (err) throw err;
+        imageCache[imgPath] = image;
+        onLoadImg(image);
     });
 }
 
@@ -251,7 +262,6 @@ function randomize() {
 
 let info = new InfoBox(document.querySelector('.info'));
 setTimeout(() => info.show(), 5000);
-redraw();
 
 const gui = window.gui = new GUI();
 gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(updateHashAndRedraw);
