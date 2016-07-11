@@ -2,100 +2,44 @@
 import Alea from 'alea';
 import InfoBox from './info_box';
 import makePixelPicker from './pixel_picker';
-import loadImg from 'load-img';
-import createEncoder from 'encode-object';
+import createImageLoader from './image_loader';
+import createRandom from './create_random';
 import SimplexNoise from 'simplex-noise';
-import {GUI} from 'dat-gui';
+import Particle from './particle';
+import createSettings from './settings';
 
 
-function createRandom(randNumGenerator) {
-    return (low, high) => {
-        if (high === undefined) {
-            high = low;
-            low = 0;
-        }
-        return randNumGenerator() * (high - low) + low | 0;
-    };
-}
+const loadImage = createImageLoader();
+const info = new InfoBox(document.querySelector('.info'));
+setTimeout(() => info.show(), 5000);
 
-let generateSeed = () => (Math.random() * 99999) | 0;
+const SPACEBAR = 32;
 
 let prng;
 let random;
 let simplex;
-let imageCache = {};
 
-const SPACEBAR = 32;
-const images = ['flatiron', 'blossoms', 'coffee', 'mountains', 'empire', 'palms',
-    'fruit', 'mosque', 'snowday', 'skyline', 'whitehouse'];
-const maxSize = Math.max(window.innerHeight, window.innerWidth) / 2 | 0;
-
-let {encodeObject, decodeObject} = createEncoder({
-    seed: ['int', 5],
-    // update encode-object to accept list of strings in config
-    // this is drastically increasing the length of the hash
-    image: ['int', 2],
-    particles: ['int', 3],
-    friction: ['float', 3],
-    area: ['int', 4],
-    lifespan: ['int', 3],
-    size: ['int', 3],
-    noiseSize: ['int', 5],
-    speed: ['int', 2],
-    fade: ['float', 2]
-});
-
-let _encodeObject = encodeObject;
-let _decodeObject = decodeObject;
-
-encodeObject = function(obj) {
-    obj = {...obj};
-    obj.image = images.indexOf(obj.image);
-    return _encodeObject(obj);
-};
-
-decodeObject = function(hash) {
-    let obj = _decodeObject(hash);
-    obj.image = images[obj.image];
-    return obj;
-};
-
-
-const config = randomConfig();
-
-let hash = location.hash.slice(1);
-if (hash) {
-    updateConfig(decodeObject(hash));
-    setupPRNG(config.seed);
+function setupPRNG(seed) {
+    prng = new Alea(seed);
+    random = createRandom(prng);
+    simplex = window.simplex = new SimplexNoise(prng);
 }
-updateHashAndRedraw();
+
+const { setupGUI } = createSettings(redraw);
 
 let running = true;
 let animationToken;
-let container = document.querySelector('.container');
-let canvas = document.createElement('canvas');
+const container = document.querySelector('.container');
+const canvas = document.createElement('canvas');
 
-let {innerHeight: height, innerWidth: width} = window;
+const { innerHeight: height, innerWidth: width } = window;
 canvas.height = height;
 canvas.width = width;
 container.appendChild(canvas);
 
 window.addEventListener('keyup', (e) => running = e.which !== SPACEBAR);
 
-class Particle {
-    constructor({position, velocity}) {
-        this.position = position;
-        this.velocity = velocity;
-    }
-
-    update(acceleration, friction) {
-        this.velocity = this.velocity.map((coord, i) => friction * (coord + acceleration[i]));
-        this.position = this.position.map((coord, i) => coord + this.velocity[i]);
-        return this.position;
-    }
-}
-
-function drawLines(image, ctx) {
+function drawLines(image, ctx, config) {
     // ctx.globalCompositeOperation = 'darker';
     let z = 0;
     let pixelPicker = makePixelPicker(image, ctx.canvas);
@@ -182,97 +126,16 @@ function drawLines(image, ctx) {
     animationToken = requestAnimationFrame(render);
 }
 
-function redraw() {
+function redraw(config) {
     setupPRNG(config.seed);
     let imgPath = `img/${config.image}.jpg`;
-
-    function onLoadImg(image) {
+    loadImage(imgPath, (image) => {
         running = true;
         cancelAnimationFrame(animationToken);
         const ctx = window.ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawLines(image, ctx);
-    }
-
-    if (imageCache[imgPath]) {
-        onLoadImg(imageCache[imgPath]);
-        return;
-    }
-
-    loadImg(imgPath, {crossOrigin: true}, (err, image) => {
-        if (err) throw err;
-        imageCache[imgPath] = image;
-        onLoadImg(image);
+        drawLines(image, ctx, config);
     });
 }
 
-function reseed() {
-    config.seed = generateSeed();
-    setupPRNG(config.seed);
-    updateHashAndRedraw();
-}
-
-function setupPRNG(seed) {
-    prng = new Alea(seed);
-    random = createRandom(prng);
-    simplex = window.simplex = new SimplexNoise(prng);
-}
-
-function updateHash() {
-    location.hash = encodeObject(config);
-    if (gui) {
-        for (let key in gui.__controllers) {
-            gui.__controllers[key].updateDisplay();
-        }
-    }
-}
-
-function updateHashAndRedraw() {
-    updateHash();
-    redraw();
-}
-
-function randomConfig() {
-    let prngSeed = generateSeed();
-    setupPRNG(prngSeed);
-    return {
-        seed: prngSeed,
-        image: images[random(images.length)],
-        particles: random(100, 600),
-        friction: 0.99,
-        area: random(maxSize / 10, maxSize / 1.5),
-        lifespan: random(5, 60),
-        size: random(1, 15),
-        noiseSize: random(10, 9999),
-        speed: random(1, 50),
-        fade: 0.0
-    };
-}
-
-function updateConfig(newConfig) {
-    Object.keys(config).forEach((key) => {
-        config[key] = newConfig[key];
-    });
-}
-
-function randomize() {
-    updateConfig(randomConfig());
-    updateHashAndRedraw();
-}
-
-let info = new InfoBox(document.querySelector('.info'));
-setTimeout(() => info.show(), 5000);
-
-const gui = window.gui = new GUI();
-gui.add(config, 'area', 10, maxSize).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'particles', 1, 999).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'friction', 0.5, 0.99).step(0.01).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'lifespan', 1, 120).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'size', 1, 20).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'noiseSize', 10, 99990).step(10).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'speed', 1, 50).step(1).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'fade', 0, 0.3).step(0.01).onFinishChange(updateHashAndRedraw);
-gui.add(config, 'image', images).onFinishChange(updateHashAndRedraw);
-gui.add({ redraw }, 'redraw');
-gui.add({ reseed }, 'reseed');
-gui.add({ randomize }, 'randomize');
+setupGUI({ redraw });
