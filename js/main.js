@@ -98,11 +98,15 @@ function drawLines(image, ctx, config) {
             // let distance = dist(position, origin);
             // let attraction = origin.map((coord, i) =>
             //     (coord - position[i]) / (distance * distance));
-            let noise = simplex.noise3D(
-                position[0] / config.noiseSize,
-                position[1] / config.noiseSize,
-                z / config.noiseSize
+            let noise1 = simplex.noise2D(
+                position[0] / config.noiseSize * z / 10,
+                position[1] / config.noiseSize * z / 10
             );
+            let noise2 = simplex.noise2D(
+                position[0] / config.noiseSize * 2.345 * z / 10 + 5,
+                position[1] / config.noiseSize * 2.345 * z / 10  + 5
+            );
+            let noise = (noise1 + noise2) / 1.5;
             let angle = noise * 360;
             let x = Math.sin(angle);
             let y = Math.cos(angle);
